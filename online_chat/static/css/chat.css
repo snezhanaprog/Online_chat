@@ -1,0 +1,121 @@
+*{
+  margin: 0;
+  padding: 0;
+}
+
+.main{
+  margin: 0;
+  padding: 0;
+  font-family: Bahnschrift;
+  background: linear-gradient(#009B76,#ADDFAD);
+  display:flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  align-items:center;
+  justify-content:center;
+  color:white;
+}
+
+.main__title{
+    font-size:28pt;
+    margin: 5%;
+}
+
+.main__form{
+    display: flex;
+    flex-direction: column;
+    align-content:center;
+    align-items:center;
+    justify-content:center;
+}
+
+.form__email, .form__username, .form__password{
+  display:flex;
+  flex-direction: row;
+  border-radius: 10px;
+  border: white solid 1px;
+  padding:0;
+  margin: 1%;
+  justify-content: space-between;
+}
+
+.email__title, .username__title, .password__title{
+  font-size:16pt;
+  margin: 2%;
+  width: 50%;
+}
+
+.email__input-reg, .username__input-reg, .password__input-reg {
+  width:100%;
+}
+
+.email__input-reg input, .username__input-reg input, .password__input-reg input {
+  display:flex;
+  width: 100%;
+  margin: 0;
+  padding:0;
+  height: 100%;
+  border: none;
+  border-left: solid white;
+  color: black;
+  border-radius: 0 10px 10px 0;
+}
+
+.email__input-log, .username__input-log, .password__input-log {
+  width:100%;
+}
+
+.email__input-log input, .username__input-log input, .password__input-log input {
+  display:flex;
+  width: 100%;
+  margin: 0;
+  padding:0;
+  height: 100%;
+  border: none;
+  border-left: solid white;
+  color: black;
+  border-radius: 0 10px 10px 0;
+}
+
+.form__info{
+   margin: 5%;
+  font-size: 14pt;
+}
+
+
+.form__button{
+    padding: 5%;
+    display: flex;
+    justify-content:center;
+}
+
+.form__button input{
+    display: flex;
+    align-content:center;
+    align-items:center;
+    justify-content:center;
+    align-self: center;
+    color: white;
+    background: none;
+    border-radius: 10px;
+    border: white 1px solid;
+    padding: 4%;
+    font-size: 14pt;
+}
+
+.main__url {
+  color: white;
+  margin: 5%;
+}
+
+.main__url a{
+  display:flex;
+  color: white;
+  font-size: 14pt;
+  outline: none;
+  text-decoration: none;
+  justify-content:center;
+  align-content:center;
+  text-align:center;
+}
