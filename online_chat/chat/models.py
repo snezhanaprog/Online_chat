@@ -32,10 +32,3 @@ class Message(models.Model): # модель сообщения
     def user_name(self):
         return self.user
 
-class Comment(models.Model): # модель комментария
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True) # поле 'автор комментария', связанное с моделью пользоваетеля первичным ключом
-    words = models.TextField(null=True) # текстовое поле с содержанием комментария
-    date = models.DateTimeField(auto_now=True) # поле 'дата отправки комментария'
-
-    class Meta:
-        ordering = ['-date']
