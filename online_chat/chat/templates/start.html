@@ -1,0 +1,15 @@
+
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Мессенджер{% endblock %}
+{% block content %}
+
+    <div class="main">
+
+    <p class="main__title">Мессенджер</p>
+
+            <div class="main__url"><a href="{% url 'log' %}" class="but_auth">Авторизация</a></div>
+            <div class="main__url"><a href="{% url 'reg' %}" class="but_auth">Регистрация</a></div>
+    </div>
+
+{% endblock content %}
