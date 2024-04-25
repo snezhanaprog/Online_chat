@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth.models import User #импортируем модель пользователя
 
 class Chat(models.Model): # модель чата
@@ -29,6 +30,5 @@ class Message(models.Model): # модель сообщения
     class Meta:
         ordering = ['-date']  #сортировка чатов по дате
 
-    def user_name(self):
-        return self.user
+
 

@@ -7,10 +7,11 @@
      <p class="main__title">Регистрация</p>
      <div class="main__form">
      <form method="POST" action="">
-         <div class="form__email">
+         {% csrf_token %}
+         <!--<div class="form__email">
              <label class="email__title">Почта</label>
               <div class="email__input-reg">{{form.email}}</div>
-         </div>
+         </div>-->
           <div class="form__username">
               <label class="username__title">Имя</label>
               <div class="username__input-reg">{{form.username}}</div>

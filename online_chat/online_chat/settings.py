@@ -36,14 +36,35 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+
+    'channels',
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'chat'
+
+    'chat',
+
 ]
+
+ASGI_APPLICATION = 'online_chat.asgi.application'
+CHANNEL_LAYERS = {
+	"default": {
+		"BACKEND": "channels.layers.InMemoryChannelLayer"
+	}
+}
+
+#CHANNEL_LAYERS = {
+    #'default': {
+     #   'BACKEND': 'channels_redis.core.RedisChannelLayer',
+     #   'CONFIG': {
+      #      "hosts": [('127.0.0.1', 8262)],
+      #  },
+   # },
+#}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -74,7 +95,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'online_chat.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases

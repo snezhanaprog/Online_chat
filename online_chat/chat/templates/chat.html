@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <h1>Chat: {{ chat.name }}</h1>
+    <form id="form">
+        <input type="text" id="message-input" placeholder="Type your message" required>
+        <button type="submit">Send</button>
+    </form>
+      <div class="message">
+    {% for mess in messages %}
+           <div class="messag">
+               <p class="name-author-message">{{ mess.user }}</p>
+              <p class="name-author-message">{{ mess.date }}</p>
+              <strong class= messag>{{mess.words}}</strong>
+         </div>
+          {% endfor %}
+          </div>
+    <div id="messages"></div>
+
+  <script type="text/javascript">
+
+      let chatName = '{{ chat.name }}';
+      var chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + chatName + '/');
+        chatSocket.onmessage = function(e){
+            let data = JSON.parse(e.data);
+            console.log('Data: ', data);
+
+                let messages = document.getElementById('messages');
+                messages.insertAdjacentHTML('beforeend',
+                `
+                 <div class="messag">
+               <p class="name-author-message">${ data.user }</p>
+               <p class="name-author-message">${ data.time }</p>
+              <strong class= messag>${data.message}</strong>
+         </div>
+                `)
+
+        }
+
+        let form = document.getElementById('form');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault()
+                let message = document.getElementById('message-input').value;
+
+            chatSocket.send(JSON.stringify({
+                "message": message,
+                "chat_name": '{{ chat.name }}',
+                "user": {{ user }},
+            }))
+            form.reset();
+        })
+
+    </script>
+
+
+{% endblock content %}
