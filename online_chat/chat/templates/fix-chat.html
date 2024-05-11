@@ -2,24 +2,6 @@
 {% load static %}
 {% block title %}Удаление чата{% endblock %}
 
-{% block header %}
- <header class="nav">
-     <div class="nav-find">
-         <form method="GET" action="{% url 'index' %}">
-             <label>Поиск чата</label>
-             <br>
-             <input type="text" class="find" name="find" placeholder="Найти..">
-         </form>
-     </div>
-     <div class="user-name">
-         <p> Ваше имя: {{request.user}}</p>
-     </div>
-     <div class="nav-exit">
-         <a href="{% url 'log-out' %}" class="nav-exit"> Выйти </a>
-     </div>
- </header>
-{% endblock %}
-
 {% block content %}
   <a href="{% url 'index' %}" class="return"> < </a>
   <br>

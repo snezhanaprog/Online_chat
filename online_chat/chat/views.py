@@ -1,63 +1,103 @@
-from django.shortcuts import render, redirect,get_object_or_404
-from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login, logout, authenticate
 from .forms import UserForm
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Chat, Message
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
+from django.urls import reverse_lazy
+from django.views import View
 
-def start(request): # представление стартовой страницы
-    return render(request, 'start.html')
 
-def log(request): # представление страницы авторизации
-    if request.method == 'POST':
+class HomeView(View):
+    template_name = 'start.html'
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name)
+
+
+class LoginUserView(View):
+    template_name = 'log.html'
+    success_url = reverse_lazy('index')
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name)
+
+    def post(self, request, *args, **kwargs):
         user_name = request.POST.get('name') # получаем имя пользователя
         password = request.POST.get('password') # получаем пароль пользователя
+        print(user_name, password)
         user = authenticate(request, username=user_name, password=password)
+        print(user)
         if user is not None:
             login(request, user)
-            return redirect('index') # поользователь авторизуется и попадает на страницу со списоком чатов
-    return render(request, 'log.html')
+            return redirect(self.success_url)
+        return redirect('log')
 
-def log_out(request): # представление выхода, перенаправляющее нас на стартовую страницу
+
+def log_out(request):
     logout(request)
     return redirect('start')
 
-def reg (request): # представление регистрации
-    form = UserForm()
-    if request.method == 'POST':
-        form = UserForm(request.POST) # заполнение формы
-        print('0')
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.set_password(form.cleaned_data['password'])
-            user.save()
-            login(request, user)
-            print('1')
-            # регистрация после проверки данных
-            return redirect('index') # пользователь регистрируется и попадает на страницу со списоком чатов
-    return render(request, 'reg.html', {'form': form})
 
-@login_required(login_url='log')
-def index(request): #представление списка чатов
-    #req = request.Get.get('find') # проверяем посиковую строку
-    req = None
-    fix = Chat.objects.filter(fix=1)  # закреплённые чаты
-    chats = Chat.objects.filter(fix=0)  # незакреплённые чаты
-    if req != None: # если строка не пустая, ищем чат
-        if req[1:].isnumeric() and req[:1] == '#':
+class RegView(CreateView):
+    template_name = 'reg.html'
+
+    success_url = reverse_lazy('index')
+    form_class = UserForm
+
+    def form_valid(self, form):
+        # Этот метод вызывается, когда валидация формы прошла успешно.
+        user = form.save(commit=False)
+        user.set_password(form.cleaned_data['password'])
+        user.save()
+        login(self.request, user)  # Выполняем вход для пользователя после регистрации
+        return super().form_valid(form)
+
+
+class ChatsView(LoginRequiredMixin, ListView):
+    # представление списка чатов
+    template_name = 'index.html'
+    context_object_name = 'chats'
+    model = Chat
+    login_url = 'log'
+
+    def get_queryset(self):
+        req = self.request.GET.get('find', '')
+        if req.startswith('#') and req[1:].isnumeric():
             # ищем по id чата
-            find = int(req[1:])
-            chats = Chat.objects.filter(id=find) # получаем список чатов для вывода
-        else:
+            return Chat.objects.filter(id=int(req[1:]))
+        elif req:
             # ищем по названию чата
-            find = request.GET.get('find')
-            chats = Chat.objects.filter(name__icontains=find) # получаем список чатов для вывода
-    else:
-        # поисковая строка пуста, значит показываем все чаты
-        find = ''
-    context = {'chats':chats,
-               'find':find,
-               'fix':fix}
-    return render(request,'index.html', context)
+            return Chat.objects.filter(name__icontains=req)
+        else:
+            # показываем все незакреплённые чаты
+            return Chat.objects.filter(fix=0)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['find'] = self.request.GET.get('find', '')
+        if context['find'] == '':
+            context['fix'] = Chat.objects.filter(fix=1)  # закреплённые чаты
+        else:
+            context['fix'] = None
+        return context
+
+
+class ChatView(LoginRequiredMixin, DetailView):
+    login_url = 'log'
+    model = Chat
+    template_name = 'chat.html'
+    context_object_name = 'chat'
+    slug_field = 'name'
+    slug_url_kwarg = 'chat_name'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["user"] = self.request.user
+        chat = context['chat']
+        context['messages'] = Message.objects.filter(chat=chat)
+
 
 @login_required(login_url='log')
 def chat(request, chat_name):
@@ -71,48 +111,62 @@ def chat(request, chat_name):
     }
     return render(request, 'chat.html', context)
 
-@login_required(login_url='log')
-def chat_up(request, chat_name): #представление редактирования чата
-    chat = Chat.objects.get(name=chat_name)
-    if request.method == 'POST':
-        chat.name = request.POST.get('name')
-        chat.text = request.POST.get('text')
-        chat.save()
-        return redirect('index')
-    return render(request, 'create-chat.html')
 
-@login_required(login_url='log')
-def create_chat(request):
-    # представление создания чата
-    if request.method == 'POST':
-        chat = Chat.objects.create(
-            author=request.user,
-            name=request.POST.get('name'),
-            text=request.POST.get('text'),
-            fix=0
-        )
-        return redirect('index')
-    return render(request, 'create-chat.html')
+class ChatUpdateView(LoginRequiredMixin, UpdateView):
+    login_url = 'log'
+    slug_field = 'name'
+    slug_url_kwarg = 'chat_name'
+    template_name = 'create-chat.html'
+    success_url = reverse_lazy('index')
+    model = Chat
+    fields = ['name', 'text']
 
-@login_required(login_url='log')
-def del_chat(request, chat_name): #представление удаления чата
-    chat = Chat.objects.get(name=chat_name)
-    if request.method == 'POST':
-        chat.delete()
-        return redirect('index')
-    return render(request, 'delete-chat.html', {'chat':chat})
+    def get_object(self, queryset=None):
+        chat_name = self.kwargs.get('chat_name')
+        return get_object_or_404(Chat, name=chat_name)
 
-@login_required(login_url='log')
-def fix_chat(request, chat_name): #представление закрепления чата
-    chat = Chat.objects.get(name=chat_name)
-    if chat.fix == 0:
-        msg = 'Закрепить'
-    else:
-        msg = 'Открепить'
-    if request.method == 'POST':
+
+class ChatCreateView(LoginRequiredMixin, CreateView):
+    login_url = 'log'
+    template_name = 'create-chat.html'
+    success_url = reverse_lazy('index')
+    model = Chat
+    fields = ['name', 'text']
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        # Задаем автора чата текущим пользователем
+        return super(ChatCreateView, self).form_valid(form)
+
+
+class ChatDeleteView(LoginRequiredMixin, DeleteView):
+    template_name = 'delete-chat.html'
+    model = Chat
+    context_object_name = 'chat'
+    slug_field = 'name'
+    slug_url_kwarg = 'chat_name'
+    login_url = 'log'
+    success_url = reverse_lazy('index')
+
+    def get_object(self, query_set=None):
+        chat_name = self.kwargs['chat_name']
+        return get_object_or_404(Chat, name=chat_name)
+
+
+class ChatFixView(LoginRequiredMixin, View):
+    template_name = 'fix-chat.html'
+    login_url = 'log'
+    success_url = reverse_lazy('index')
+
+    def get(self, request, *args, **kwargs):
+        chat_name = self.kwargs['chat_name']
+        chat = get_object_or_404(Chat, name=chat_name)
+        msg = 'Открепить' if chat.fix else 'Закрепить'
+        return render(request, self.template_name, {'chat': chat, 'msg': msg})
+
+    def post(self, request, *args, **kwargs):
+        chat_name = self.kwargs.get('chat_name')
+        chat = get_object_or_404(Chat, name=chat_name)
         chat.fixed()
         chat.save()
-        return redirect('index')
-    return render(request, 'fix-chat.html', {'chat':chat, 'msg':msg})
-
-
+        return redirect(self.success_url)

@@ -1,14 +1,15 @@
 {% extends 'base.html' %}
 {% load static %}
-
+{% block header %}
+{% endblock header %}
 {% block content %}
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <h1>Chat: {{ chat.name }}</h1>
+    <h1>Чат: {{ chat.name }}</h1>
     <form id="form">
-        <input type="text" id="message-input" placeholder="Type your message" required>
-        <button type="submit">Send</button>
+        <input type="text" id="message-input" placeholder="Введите сообщение..." required>
+        <button type="submit">Отправить</button>
     </form>
       <div class="message">
     {% for mess in messages %}
@@ -49,7 +50,7 @@
             chatSocket.send(JSON.stringify({
                 "message": message,
                 "chat_name": '{{ chat.name }}',
-                "user": {{ user }},
+                "user": '{{ user }}',
             }))
             form.reset();
         })

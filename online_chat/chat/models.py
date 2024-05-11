@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User #импортируем модель пользователя
 
+
 class Chat(models.Model): # модель чата
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True) # поле 'автор чата', связанное с моделью пользоваетеля первичным ключом
     name = models.CharField(max_length=20, unique=True) # строковое поле 'имя чата'
@@ -12,14 +13,16 @@ class Chat(models.Model): # модель чата
     class Meta:
         ordering = ['-date'] #сортировка чатов по дате
 
+    def __str__(self):
+        return self.name
+
     def fixed(self):
-        """
-        метод для закрепления чата
-        """
+        # метод для закрепления чата
         if self.fix == 0:
             self.fix = 1
         else:
             self.fix = 0
+
 
 class Message(models.Model): # модель сообщения
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True) # поле 'пользователь', связанное с моделью пользоваетеля первичным ключом
